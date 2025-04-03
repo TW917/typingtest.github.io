@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Speed Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 80%;
+      max-width: 800px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      resize: none;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #results {
+      margin-top: 20px;
+    }
+    select {
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 5px;
+    }
+    #startPrompt {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #555;
+      font-style: italic;
+    }
+    #timer {
+      font-size: 24px;
+      margin-top: 20px;
+      font-weight: bold;
+      color: #ff0000;
+    }
+    #hyperlink {
+      margin-top: 30px;
+    }
+    #hyperlink a {
+      text-decoration: none;
+      font-size: 18px;
+      color: #4CAF50;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Typing Speed Test</h1>
+    <p>Select text for typing test:</p>
+    <select id="textSelect">
+      <option value="Slow">Slow</option>
+      <option value="Fast">Fast</option>
+    </select>
+    <div id="testText" style="margin-top: 20px; font-size: 20px; font-family: 'Courier New', Courier, monospace;">
+      <p>Loading text...</p>
+    </div>
+    <textarea id="typingArea" placeholder="Start typing here..."></textarea>
+    <div id="startPrompt">
+      <p>The typing test will begin as soon as you start typing. Type the text below as quickly and accurately as you can! You have one minute to complete the test.</p>
+    </div>
+    <div id="timer">Time left: 60s</div>
+    <div id="results"></div>
+    <div id="hyperlink">
+      <p><a href="https://www.ece286typingtest.com" target="_blank">Visit this typing speed test online!</a></p>
+    </div>
+  </div>
+
+  <script>
+    const slowText = `When shall we three meet again in thunder, lightning, or in rain? When the hurlyburly's done, When the battle's lost and won. That will be ere the set of sun. Where the place? Upon the heath. There to meet with Macbeth. I come, Graymalkin! Paddock calls: anon! Fair is foul, and foul is fair: Hover through the fog and filthy air. What bloody man is that? He can report, As seemeth by his plight, of the revolt The newest state. This is the sergeant Who like a good and hardy soldier fought 'Gainst my captivity. Hail, brave friend; Say to the king the knowledge of the broil As thou didst leave it. Doubtful it stood; As two spent swimmers, that do cling together And choke their art. The merciless Macdonwald-- Worthy to be a rebel, for to that The multiplying villanies of nature Do swarm upon him--from the western isles Of kerns and gallowglasses is supplied; And fortune, on his damned quarrel smiling, Show'd like a rebel's whore: but all's too weak: For brave Macbeth--well he deserves that name-- Disdaining fortune, with his brandish'd steel, Which smoked with bloody execution, Like valour's minion carved out his passage Till he faced the slave; Which ne'er shook hands, nor bade farewell to him, Till he unseam'd him from the nave to the chaps, And fix'd his head upon our battlements.`;
+    
+    const fastText = `Two households, both alike in dignity, In fair Verona, where we lay our scene, From ancient grudge break to new mutiny, Where civil blood makes civil hands unclean. From forth the fatal loins of these two foes A pair of star-cross'd lovers take their life; Whose misadventured piteous overthrows Do with their death bury their parents' strife. The fearful passage of their death-mark'd love, And the continuance of their parents' rage, Which, but their children's end, nought could remove, Is now the two hours' traffic of our stage; The which if you with patient ears attend, What here shall miss, our toil shall strive to mend. Gregory, o' my word, we'll not carry coals. No, for then we should be colliers. I mean, an we be in choler, we'll draw. Ay, while you live, draw your neck out o' the collar. I strike quickly, being moved. But thou art not quickly moved to strike. A dog of the house of Montague moves me. To move is to stir; and to be valiant is to stand: therefore, if thou art moved, thou run'st away. A dog of that house shall move me to stand: I will take the wall of any man or maid of Montague's.`;
+
+    let selectedText = "";
+    let startTime;
+    let endTime;
+    let isTestStarted = false;
+    let countdown;
+
+    function updateText() {
+      const textSelect = document.getElementById("textSelect").value;
+      if (textSelect === "Slow") {
+        selectedText = slowText;
+      } else {
+        selectedText = fastText;
+      }
+      document.getElementById("testText").innerText = selectedText;
+      document.getElementById("typingArea").value = "";
+      document.getElementById("results").innerHTML = "";
+      document.getElementById("timer").innerText = "Time left: 60s";
+    }
+
+    function startTest() {
+      if (!isTestStarted) {
+        startTime = new Date().getTime();
+        isTestStarted = true;
+        let timeLeft = 60;
+        countdown = setInterval(function() {
+          timeLeft--;
+          document.getElementById("timer").innerText = `Time left: ${timeLeft}s`;
+          if (timeLeft <= 0) {
+            clearInterval(countdown);
+            endTest();
+          }
+        }, 1000); // Update every second
+        setTimeout(endTest, 60000);  // End test after 1 minute
+      }
+    }
+
+    function endTest() {
+      const typedText = document.getElementById("typingArea").value;
+      endTime = new Date().getTime();
+
+      const wpm = calculateWPM(typedText);
+      const accuracy = calculateAccuracy(typedText);
+
+      document.getElementById("results").innerHTML = `
+        <h3>Results</h3>
+        <p>Words Per Minute (WPM): ${wpm}</p>
+        <p>Accuracy: ${accuracy}%</p>
+      `;
+      document.getElementById("typingArea").disabled = true;
+    }
+
+    function calculateWPM(typedText) {
+      const wordCount = typedText.split(/\s+/).length;
+      const timeInMinutes = (endTime - startTime) / 60000;
+      return Math.round(wordCount / timeInMinutes);
+    }
+
+    function calculateAccuracy(typedText) {
+      const typedWords = typedText.split(/\s+/);
+      const originalWords = selectedText.split(/\s+/);
+      
+      let correctWords = 0;
+      const totalTypedWords = typedWords.length;
+      
+      for (let i = 0; i < totalTypedWords; i++) {
+        if (typedWords[i] === originalWords[i]) {
+          correctWords++;
+        }
+      }
+
+      const accuracy = (correctWords / totalTypedWords) * 100;
+      return Math.round(accuracy);
+    }
+
+    document.getElementById("textSelect").addEventListener("change", updateText);
+    document.getElementById("typingArea").addEventListener("input", startTest);
+
+    // Load default text
+    updateText();
+  </script>
+
+</body>
+</html>
